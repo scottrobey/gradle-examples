@@ -1,0 +1,6 @@
+allprojects {
+  apply plugin: 'java'
+  apply plugin: 'distribution'
+  group "org.compositeexample.compA"
+  version "1.0"
+}

@@ -1,0 +1,116 @@
+/**
+ * Composite project example with different samples of how to do different tasks
+ *
+ * Useful docs:
+ *
+ * Getting started: https://docs.gradle.org/current/userguide/tutorial_java_projects.html
+ *
+ * Guides: https://gradle.org/guides/
+ *
+ * Reference
+ *  - Top-level Gradle DSL reference: https://docs.gradle.org/current/dsl/
+ *  - Composite Builds: https://docs.gradle.org/current/userguide/composite_builds.html
+ *  - Working with files and file tress: https://docs.gradle.org/current/userguide/working_with_files.html
+ *  - Understanding configurations and dependencies: https://docs.gradle.org/current/userguide/managing_dependency_configurations.html
+ *  - Methods/properties available on the configuration object: https://docs.gradle.org/current/dsl/org.gradle.api.artifacts.Configuration.html
+ *  - Declaring dependencies: https://docs.gradle.org/current/userguide/declaring_dependencies.html
+ *
+ */
+
+allprojects {
+    apply plugin: 'idea'
+    apply plugin: 'distribution'
+
+    group "org.example.gradle"
+    version "1.0"
+
+    repositories {
+      mavenLocal()
+      mavenCentral()
+      jcenter()
+    }
+
+}
+
+// Defining multiple configurations
+configurations {
+  config1
+  config2
+
+}
+
+
+dependencies {
+
+    config1 'org.apache.httpcomponents:httpclient:4.5.6'
+    config1 "org.webjars:swagger-ui:2.1.5"
+
+    config2 group:"tomcat", name:"apache-tomcat", version:"5.5.23", ext:"zip"
+
+    config2  group: 'junit', name: 'junit', version: '4.+'
+
+}
+
+//
+// Custom tasks
+//
+
+
+//
+// Debugging build scripts
+//
+task debug1 {
+  doFirst {
+    println "** config1 dependencies: ${configurations.config1.files}"
+
+    def swaggerFile = configurations.config1.filter {f -> f.name.contains('swagger')}
+    println "** Swagger file : ${swaggerFile.singleFile}"
+
+    // inspect an object's type and properties
+    println "Configuration type: ${configurations.config1.getClass()}"
+    //println "Configuration object properties: ${configurations.config1.properties}"
+
+    def vwTar = configurations.config2.filter {f -> f.name.contains('tomcat')}.singleFile
+    println "VW Tar: ${vwTar}"
+
+  }
+
+  doLast {
+    println "** config2 dependencies: ${configurations.config2.files}"
+  }
+}
+
+//
+// Working with files
+//
+
+//
+// Building distributions
+//
+distributions {
+  main {
+    baseName = 'testdistro1'
+    contents {
+      // extracts the tomcat artifact from the config2 configuration and puts it into an extracted directory
+      from(zipTree(configurations.config2.filter {f -> f.name.contains('tomcat')}.singleFile)) {
+        into('extracted')
+      }
+    }
+  }
+}
+
+//
+// Building war files
+//
+//war {
+//  rootSpec.exclude("**/*analysis-server*tar.gz")
+//  archiveName = "Brainspace-rest-${version}.war"
+//  from(zipTree(configurations.api.singleFile).matching {include "META-INF/resources/webjars/swagger-ui/${swagger_ui_version}/**"}) {
+//    exclude("**/index.html*")
+//    into('api-docs')
+//    eachFile { f ->
+//      f.path = f.path.replaceFirst("META-INF/resources/webjars/swagger-ui/${swagger_ui_version}", '')
+//    }
+//    includeEmptyDirs false
+//  }
+//}

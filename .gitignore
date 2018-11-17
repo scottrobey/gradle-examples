@@ -1,0 +1,14 @@
+# IntelliJ IDEA files
+*.iml
+.idea/
+.settings
+.project
+.classpath
+.vscode
+bin/
+out/
+
+#gradle files
+build/
+.gradle
+

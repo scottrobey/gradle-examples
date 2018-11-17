@@ -1,0 +1,6 @@
+rootProject.name='gradle-examples'
+
+includeBuild 'compA'
+includeBuild 'compB/nested'
+includeBuild 'kotlinExample'
+

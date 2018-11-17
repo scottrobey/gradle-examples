@@ -1,0 +1,4 @@
+rootProject.name = 'compA'
+include ':subModA'
+
+project(':subModA').projectDir = "$rootDir/subModA" as File

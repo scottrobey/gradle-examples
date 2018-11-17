@@ -1,0 +1,13 @@
+apply plugin: 'java'
+apply plugin: 'idea'
+
+group "org.compositeexample.compB"
+version "1.0"
+
+dependencies {
+   compile group: 'org.compositeexample.compA', name: 'subModA', version: '1.0'
+}
+
+repositories {
+    jcenter()
+}
