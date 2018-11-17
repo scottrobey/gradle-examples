@@ -70,8 +70,8 @@ task debug1 {
     println "Configuration type: ${configurations.config1.getClass()}"
     //println "Configuration object properties: ${configurations.config1.properties}"
 
-    def vwTar = configurations.config2.filter {f -> f.name.contains('tomcat')}.singleFile
-    println "VW Tar: ${vwTar}"
+    def tomcatZip = configurations.config2.filter {f -> f.name.contains('tomcat')}.singleFile
+    println "Tomcat Zip File: ${tomcatZip}"
 
   }
 
@@ -103,8 +103,8 @@ distributions {
 // Building war files
 //
 //war {
-//  rootSpec.exclude("**/*analysis-server*tar.gz")
-//  archiveName = "Brainspace-rest-${version}.war"
+//  rootSpec.exclude("**/*someserver*tar.gz")
+//  archiveName = "rest-${version}.war"
 //  from(zipTree(configurations.api.singleFile).matching {include "META-INF/resources/webjars/swagger-ui/${swagger_ui_version}/**"}) {
 //    exclude("**/index.html*")
 //    into('api-docs')
