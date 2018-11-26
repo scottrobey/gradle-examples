@@ -16,4 +16,7 @@ public class MyOtherClass {
         }
     }
 
+    void doIt() {
+    }
+
 }

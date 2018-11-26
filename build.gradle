@@ -15,28 +15,26 @@
  *  - Methods/properties available on the configuration object: https://docs.gradle.org/current/dsl/org.gradle.api.artifacts.Configuration.html
  *  - Declaring dependencies: https://docs.gradle.org/current/userguide/declaring_dependencies.html
  *
+ *  To build compB independent of compA: cd compA and run: gradle publishToMavenLocal
+ *  Then go to compB/nested and: gradle build
  */
 
-allprojects {
-    apply plugin: 'idea'
-    apply plugin: 'distribution'
+apply plugin: 'idea'
+apply plugin: 'distribution'
 
-    group "org.example.gradle"
-    version "1.0"
+group "org.example.gradle"
+version "1.0"
 
-    repositories {
-      mavenLocal()
-      mavenCentral()
-      jcenter()
-    }
-
+repositories {
+    mavenLocal()
+    mavenCentral()
+    jcenter()
 }
 
 // Defining multiple configurations
 configurations {
   config1
   config2
-
 }
 
 
@@ -55,6 +53,13 @@ dependencies {
 // Custom tasks
 //
 
+/**
+ * gradle test from the top-level does not run tests for the included composite builds, not sure if
+ * this is a bug or a feature
+*/
+task test {
+  dependsOn gradle.includedBuilds*.task(':test')
+}
 
 //
 // Debugging build scripts

@@ -9,5 +9,5 @@ public class MyClass {
         throw new ValidationException("orange man bad!");
     }
 
-  
+
 }

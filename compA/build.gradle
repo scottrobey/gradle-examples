@@ -1,6 +1,7 @@
 allprojects {
   apply plugin: 'java'
-  apply plugin: 'distribution'
+  apply plugin: 'maven-publish'
+
   group "org.compositeexample.compA"
   version "1.0"
 }
