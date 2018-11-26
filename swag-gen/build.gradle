@@ -15,6 +15,10 @@ dependencies {
   compile 'org.eclipse.jetty:jetty-servlet:9.4.+'
   compile 'org.eclipse.jetty:jetty-server:9.4.+'
   compile 'org.eclipse.jetty:jetty-util:9.4.+'
+
+  // swagger
+  compile('io.swagger:swagger-jersey2-jaxrs:1.5.3')
+
 }
 
 repositories {
