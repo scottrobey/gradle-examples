@@ -5,6 +5,8 @@ group "org.sample.swaggen"
 version "1.0"
 
 dependencies {
+  compile group: 'commons-io', name: 'commons-io', version: '2.5'
+
   // jersey
   compile 'org.glassfish.jersey.core:jersey-server:2.25'
   compile 'org.glassfish.jersey.containers:jersey-container-servlet-core:2.25'

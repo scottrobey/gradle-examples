@@ -1,14 +1,17 @@
 package org.sample.swaggen;
 
 import java.net.URI;
-import java.util.UUID;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
 
 import javax.ws.rs.ApplicationPath;
 
+import org.apache.commons.io.IOUtils;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.server.handler.HandlerList;
-import org.eclipse.jetty.server.handler.ShutdownHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -18,6 +21,8 @@ import io.swagger.jaxrs.config.BeanConfig;
 import io.swagger.jaxrs.listing.ApiListingResource;
 import io.swagger.jaxrs.listing.SwaggerSerializers;
 
+import static java.lang.System.out;
+
 
 /**
  * Sets up an embedded Jetty server with Jersey 2 and Swagger using an JAX-RS Application configuration
@@ -25,52 +30,42 @@ import io.swagger.jaxrs.listing.SwaggerSerializers;
  */
 class SwagGenerator {
 
-    public static void main(String[] args) {
-        final String uuid = UUID.randomUUID().toString();
+    public static void main(String[] args) throws Exception {
+        // TODO: configure
+        final String outputFileLocation = "";
 
-        try {
-            final Server server = new Server();
+        final Server server = new Server();
 
-            final ServerConnector connector = new ServerConnector(server);
-            // pick a dynamic port
-            connector.setPort(0);
-            server.addConnector(connector);
+        final ServerConnector connector = new ServerConnector(server);
+        // pick a dynamic port
+        connector.setPort(0);
+        server.addConnector(connector);
 
-            final ServletContextHandler root = new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS);
+        final ServletContextHandler root = new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS);
 
-            ServletHolder restServlet = new ServletHolder(new ServletContainer(new ApplicationConfig(SwagGenerator.class.getPackage().getName())));
-            restServlet.setInitOrder(1);
-            root.addServlet(restServlet, "/*");
+        ServletHolder restServlet =
+                new ServletHolder(new ServletContainer(new ApplicationConfig(SwagGenerator.class.getPackage().getName())));
+        restServlet.setInitOrder(1);
+        root.addServlet(restServlet, "/*");
 
-            // setup shutdown handler
-            ShutdownHandler shutdown = new ShutdownHandler(uuid, false, true);
-            server.setHandler(new HandlerList(shutdown, root));
+        out.println("Starting Jetty Server...");
+        server.start();
 
-            sysout("Starting Jetty Server..." );
-            server.start();
+        final URI serverURI = server.getURI();
+        final URI swaggerURI = serverURI.resolve("/swagger.json");
 
-            final URI serverURI = server.getURI();
+        out.println("Server started at: " + serverURI);
 
-            sysout("Server started at: " + serverURI);
-            sysout("Swagger served at: " + serverURI + "swagger.json");
-            sysout("To Shutdown: curl -X POST http://localhost:" + serverURI.getPort() + "/shutdown?token=" + uuid);
+        final String swaggerJson = IOUtils.toString(swaggerURI, Charset.defaultCharset());
+        if (swaggerJson.isEmpty()) throw new Exception("Swagger JSON is empty!");
 
-            server.join();
+        Path swaggerFilePath = Paths.get(outputFileLocation, "swagger.json");
 
-        } catch (Throwable e) {
-            syserr("Exception occurred", e);
-        }
-    }
+        Files.write(swaggerFilePath, Arrays.asList(swaggerJson));
+        out.println("Swagger JSON written to: " + swaggerFilePath.toFile().getAbsolutePath());
 
-    static void sysout(String msg) {
-        System.out.println(msg);
-    }
-    static void syserr(String msg) {
-        System.err.println(msg);
-    }
-    static void syserr(String msg, Throwable t) {
-        syserr(msg);
-        t.printStackTrace();
+        server.stop();
+        server.destroy();
     }
 
     @ApplicationPath("/swagger")
