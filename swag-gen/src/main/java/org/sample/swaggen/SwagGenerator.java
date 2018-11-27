@@ -1,6 +1,7 @@
 package org.sample.swaggen;
 
 import java.net.URI;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,42 +31,52 @@ import static java.lang.System.out;
  */
 class SwagGenerator {
 
-    public static void main(String[] args) throws Exception {
-        // TODO: configure
-        final String outputFileLocation = "";
+    public static void main(String[] args){
+        try {
+            // TODO: configure
+            final String outputFileLocation = "";
 
-        final Server server = new Server();
+            final Server server = new Server();
 
-        final ServerConnector connector = new ServerConnector(server);
-        // pick a dynamic port
-        connector.setPort(0);
-        server.addConnector(connector);
+            final ServerConnector connector = new ServerConnector(server);
+            // pick a dynamic port
+            connector.setPort(0);
+            server.addConnector(connector);
 
-        final ServletContextHandler root = new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS);
+            final ServletContextHandler root = new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS);
 
-        ServletHolder restServlet =
-                new ServletHolder(new ServletContainer(new ApplicationConfig(SwagGenerator.class.getPackage().getName())));
-        restServlet.setInitOrder(1);
-        root.addServlet(restServlet, "/*");
+            ServletHolder restServlet =
+                    new ServletHolder(new ServletContainer(new ApplicationConfig(SwagGenerator.class.getPackage().getName())));
+            restServlet.setInitOrder(1);
+            root.addServlet(restServlet, "/*");
 
-        out.println("Starting Jetty Server...");
-        server.start();
+            out.println("Starting Jetty Server...");
+            server.start();
 
-        final URI serverURI = server.getURI();
-        final URI swaggerURI = serverURI.resolve("/swagger.json");
+            int dynamicPort = ((ServerConnector)server.getConnectors()[0]).getLocalPort();
+            String swaggerUrl = "http://localhost:" + dynamicPort + "/swagger.json";
+            // getURI() was taking several seconds on my mac, find the dynamic port instead
+            //final URI serverURI = server.getURI();
+            //final URI swaggerURI = serverURI.resolve("/swagger.json");
 
-        out.println("Server started at: " + serverURI);
+            out.println("Swagger URL: " + swaggerUrl);
 
-        final String swaggerJson = IOUtils.toString(swaggerURI, Charset.defaultCharset());
-        if (swaggerJson.isEmpty()) throw new Exception("Swagger JSON is empty!");
+            final String swaggerJson = IOUtils.toString(new URL(swaggerUrl), Charset.defaultCharset());
+            if (swaggerJson.isEmpty()) throw new Exception("Swagger JSON is empty!");
 
-        Path swaggerFilePath = Paths.get(outputFileLocation, "swagger.json");
+            Path swaggerFilePath = Paths.get(outputFileLocation, "swagger.json");
 
-        Files.write(swaggerFilePath, Arrays.asList(swaggerJson));
-        out.println("Swagger JSON written to: " + swaggerFilePath.toFile().getAbsolutePath());
+            Files.write(swaggerFilePath, Arrays.asList(swaggerJson));
+            out.println("Swagger JSON written to: " + swaggerFilePath.toFile().getAbsolutePath());
 
-        server.stop();
-        server.destroy();
+            server.stop();
+            server.destroy();
+        }
+        catch(Throwable t) {
+            System.err.println(t.getMessage());
+            t.printStackTrace();
+            System.exit(-1);
+        }
     }
 
     @ApplicationPath("/swagger")

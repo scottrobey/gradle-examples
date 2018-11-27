@@ -1,22 +1,37 @@
 apply plugin: 'java'
 apply plugin: 'idea'
+apply plugin: 'application'
 
 group "org.sample.swaggen"
 version "1.0"
 
+application {
+  mainClassName = "org.sample.swaggen.SwagGenerator"
+}
+
 dependencies {
   compile group: 'commons-io', name: 'commons-io', version: '2.5'
 
-  // jersey
-  compile 'org.glassfish.jersey.core:jersey-server:2.25'
-  compile 'org.glassfish.jersey.containers:jersey-container-servlet-core:2.25'
+  // java 11 requires jersey 2.27 - https://stackoverflow.com/questions/52658991/migrate-jersey-project-to-use-java-10-results-in-java-lang-illegalargumentexcept
 
-  compile 'org.glassfish.jersey.containers:jersey-container-jetty-http:2.25'
+  // jersey
+  compile 'org.glassfish.jersey.core:jersey-server:2.27'
+  compile 'org.glassfish.jersey.containers:jersey-container-servlet-core:2.27'
+
+  compile 'org.glassfish.jersey.containers:jersey-container-jetty-http:2.27'
+  compile 'org.glassfish.jersey.core:jersey-common:2.27'
+  compile 'org.glassfish.jersey.inject:jersey-hk2:2.27'
 
   // jetty
   compile 'org.eclipse.jetty:jetty-servlet:9.4.+'
   compile 'org.eclipse.jetty:jetty-server:9.4.+'
   compile 'org.eclipse.jetty:jetty-util:9.4.+'
+
+  // java 11 moved jaxb out of the JDK
+  compile 'javax.xml.bind:jaxb-api:2.2.11'
+  compile 'com.sun.xml.bind:jaxb-core:2.2.11'
+  compile 'com.sun.xml.bind:jaxb-impl:2.2.11'
+  compile 'javax.activation:activation:1.1.1'
 
   // swagger
   compile('io.swagger:swagger-jersey2-jaxrs:1.5.3')
