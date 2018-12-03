@@ -11,6 +11,7 @@ application {
 
 dependencies {
   compile group: 'commons-io', name: 'commons-io', version: '2.5'
+  compile "org.json:json:20180813"
 
   // java 11 requires jersey 2.27 - https://stackoverflow.com/questions/52658991/migrate-jersey-project-to-use-java-10-results-in-java-lang-illegalargumentexcept
 

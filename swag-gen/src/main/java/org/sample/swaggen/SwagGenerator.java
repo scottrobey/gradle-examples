@@ -1,12 +1,12 @@
 package org.sample.swaggen;
 
-import java.net.URI;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Optional;
 
 import javax.ws.rs.ApplicationPath;
 
@@ -17,6 +17,7 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
+import org.json.JSONObject;
 
 import io.swagger.jaxrs.config.BeanConfig;
 import io.swagger.jaxrs.listing.ApiListingResource;
@@ -31,10 +32,23 @@ import static java.lang.System.out;
  */
 class SwagGenerator {
 
-    public static void main(String[] args){
+    /**
+     * Usage:
+     * --location=[file path]
+     * --readonly-correction
+     * --pretty
+     *
+     * @param args
+     */
+    public static void main(String[] args) {
         try {
-            // TODO: configure
-            final String outputFileLocation = "";
+            final String outputFileLocation = getArg(args, "--location");
+            if(outputFileLocation.isEmpty()) {
+                throw new RuntimeException("--location required argument not found");
+            }
+
+            final boolean readOnlyCorrection = getSwitchArg(args, "--readonly-correction");
+            final boolean prettyPrint = getSwitchArg(args, "--pretty");
 
             final Server server = new Server();
 
@@ -46,14 +60,14 @@ class SwagGenerator {
             final ServletContextHandler root = new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS);
 
             ServletHolder restServlet =
-                    new ServletHolder(new ServletContainer(new ApplicationConfig(SwagGenerator.class.getPackage().getName())));
+                    new ServletHolder(new ServletContainer(new ApplicationConfig()));
             restServlet.setInitOrder(1);
             root.addServlet(restServlet, "/*");
 
             out.println("Starting Jetty Server...");
             server.start();
 
-            int dynamicPort = ((ServerConnector)server.getConnectors()[0]).getLocalPort();
+            int dynamicPort = ((ServerConnector) server.getConnectors()[0]).getLocalPort();
             String swaggerUrl = "http://localhost:" + dynamicPort + "/swagger.json";
             // getURI() was taking several seconds on my mac, find the dynamic port instead
             //final URI serverURI = server.getURI();
@@ -61,8 +75,17 @@ class SwagGenerator {
 
             out.println("Swagger URL: " + swaggerUrl);
 
-            final String swaggerJson = IOUtils.toString(new URL(swaggerUrl), Charset.defaultCharset());
+            String swaggerJson = IOUtils.toString(new URL(swaggerUrl), Charset.defaultCharset());
             if (swaggerJson.isEmpty()) throw new Exception("Swagger JSON is empty!");
+
+            if(readOnlyCorrection) {
+                // change readOnly:true -> false, because: https://github.com/swagger-api/swagger-core/issues/2169
+                swaggerJson = swaggerJson.replaceAll("\"readOnly\":true", "\"readOnly\":false");
+            }
+
+            if(prettyPrint) {
+                swaggerJson = new JSONObject(swaggerJson).toString(4);
+            }
 
             Path swaggerFilePath = Paths.get(outputFileLocation, "swagger.json");
 
@@ -71,12 +94,25 @@ class SwagGenerator {
 
             server.stop();
             server.destroy();
-        }
-        catch(Throwable t) {
+        } catch (Throwable t) {
             System.err.println(t.getMessage());
             t.printStackTrace();
             System.exit(-1);
         }
+    }
+
+    private static boolean getSwitchArg(final String[] args, final String switchArg) {
+        final Optional<String> found = Arrays.stream(args).filter(arg -> arg.equals(switchArg)).findFirst();
+        return found.isPresent();
+    }
+
+    private static String getArg(final String[] args, final String theArg) {
+        final Optional<String> found = Arrays.stream(args).filter(arg -> arg.startsWith(theArg + "=")).findFirst();
+        if(found.isPresent()) {
+            final String foundArgument = found.get();
+            return foundArgument.substring(foundArgument.indexOf("=")+1);
+        }
+        return "";
     }
 
     @ApplicationPath("/swagger")
