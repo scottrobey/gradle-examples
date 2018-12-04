@@ -77,9 +77,9 @@ task debug1 {
     println "Configuration type: ${configurations.config1.getClass()}"
     //println "Configuration object properties: ${configurations.config1.properties}"
 
-    def tomcatZip = configurations.config2.filter {f -> f.name.contains('tomcat')}.singleFile
+    // use println() to debug lambdas on-the-fly
+    def tomcatZip = configurations.config2.filter {f -> println("on the fly: ${f}") || f.name.contains('tomcat')}.singleFile
     println "Tomcat Zip File: ${tomcatZip}"
-
   }
 
   doLast {
