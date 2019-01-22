@@ -1,0 +1,73 @@
+// new way to add plugins
+plugins {
+  id 'com.gradle.build-scan' version '1.16'
+  id 'java'
+}
+group "org.example.gradle"
+version "1.0"
+
+buildScan {
+  termsOfServiceUrl = 'https://gradle.com/terms-of-service'
+  termsOfServiceAgree = 'yes'
+}
+
+configurations {
+  custom
+}
+
+dependencies {
+  custom group: "tomcat", name: "apache-tomcat", version: "5.5.23", ext: "zip"
+}
+
+
+/**
+ * Run:
+ * > gradle tasks
+ * > gradle tasks --all
+ *   (shows task not part of a group)
+ *
+ * > gradle taskLifecycle
+ * > gradle clean taskLifecycle --info > build.out
+ *
+ * > gradle taskLifecycle --dry-run
+ *   (configures the project but doesn't run any tasks)
+ *
+ * > gradle clean build
+ *   (notice task graph)
+ *
+ * > gradle build --scan
+ *
+ */
+
+// https://docs.gradle.org/current/dsl/org.gradle.api.tasks.Copy.html
+task taskLifecycle(type: Copy) {
+  group = 'Build'
+  description = 'This is a task that demonstrates the build lifecycle'
+  inputs.files(configurations.custom.files) // unnecessary bc copy task understands
+  outputs.file("${buildDir}/stage") // unnecessary bc of into
+  from(configurations.custom.files)
+  into("${buildDir}/stage")
+  eachFile {
+    println "eachFile() This is a DSL method on the copy task to allow processing on files as they're copied. Copying ${it} ..."
+  }
+  doFirst {
+    println "doFirst()  Executes before copy, file contents: ${fileTree(buildDir).files}"
+  }
+  doLast {
+    println "doLast()   Executes after the copy: file contents; ${fileTree(buildDir).files}"
+  }
+
+  println "Executes during the configuration, dir contents: ${fileTree(buildDir).files}"
+}
+
+build.dependsOn('taskLifecycle')
+
+
+gradle.taskGraph.whenReady { taskGraph ->
+  println "Found task graph: " + taskGraph
+  println "Found " + taskGraph.allTasks.size() + " tasks."
+  taskGraph.allTasks.forEach { task ->
+    println task
+    task.dependsOn.forEach { dep -> println " --> " + dep }
+  }
+}

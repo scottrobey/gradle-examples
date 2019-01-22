@@ -4,4 +4,5 @@ includeBuild 'compA'
 includeBuild 'compB/nested'
 includeBuild 'kotlinExample'
 includeBuild 'swag-gen'
+includeBuild 'brown-bag'
 
