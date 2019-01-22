@@ -3,16 +3,40 @@ dependencies {
   compile group: 'javax.validation', name: 'validation-api', version: '1.0.0.GA'
 
   compile  group: 'junit', name: 'junit', version: '4.+'
-
 }
+
+
+// say we want to publish multiple artifacts from the same project, a jar file and a custom artifact that's just a flat file
+// Try this using 'gradle publishToMavenLocal'
+def generated = "${buildDir}/gen/generated.txt"
+task generate{
+  outputs.file(generated)
+  doFirst {
+    new File(generated) << "This is my generated artifact published as part of my project "
+  }
+}
+assemble.dependsOn('generate')
+
+// Example 4. Defining a custom artifact for a configuration - https://docs.gradle.org/current/userguide/publishing_overview.html
+def swaggerArtifact = artifacts.add('runtime', file(generated)) {
+  builtBy 'generate'
+}
+
+// I think it's necessary to add the artifact to the default configuration to allow it to be picked up during the composite build
+artifacts {
+  runtime swaggerArtifact
+}
+
+publishToMavenLocal.dependsOn('generate')
 
 publishing.publications {
   mavenJava(MavenPublication) {
     from components.java
   }
+  maven(MavenPublication) {
+    artifact generated
+    artifactId "MyGeneratedArtifact"
+  }
 }
 
-
-repositories {
-  jcenter()
-}
+println "Runtime Artifacts: " + configurations.runtime.allArtifacts

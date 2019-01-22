@@ -35,6 +35,8 @@ repositories {
 configurations {
   config1
   config2
+
+  custom
 }
 
 
@@ -47,6 +49,7 @@ dependencies {
 
     config2  group: 'junit', name: 'junit', version: '4.+'
 
+
 }
 
 //
@@ -55,12 +58,31 @@ dependencies {
 //     they will show using 'gradle tasks --all'
 //
 
+task stageFiles(type: Copy) {
+  from(configurations.config2.files)
+  into("${buildDir}/stage")
+  eachFile {
+    println "Copying ${it} ..."
+  }
+  doFirst {
+    println "doFirst: Executes before copy, file contents; ${fileTree(buildDir).files}"
+  }
+  doLast {
+    println "doLast: Executes after the copy: file contents; ${fileTree(buildDir).files}"
+  }
+
+  println "Executes during the configuration, dir contents: ${fileTree(buildDir).files}"
+}
 
 task test {
   group = "Test"
   description = "gradle test from the top-level does not run tests for the included composite builds, not sure if this is a bug or a feature"
   dependsOn gradle.includedBuilds*.task(':test')
 }
+
+build.dependsOn(gradle.includedBuilds*.task(':build'))
+clean.dependsOn(gradle.includedBuilds*.task(':clean'))
+
 
 //
 // Debugging build scripts
@@ -80,6 +102,8 @@ task debug1 {
     // use println() to debug lambdas on-the-fly
     def tomcatZip = configurations.config2.filter {f -> println("on the fly: ${f}") || f.name.contains('tomcat')}.singleFile
     println "Tomcat Zip File: ${tomcatZip}"
+
+
   }
 
   doLast {
@@ -109,29 +133,6 @@ distributions {
 //
 // Artifacts and Publications using the maven-publish plugin
 //
-
-// say we want to publish multiple artifacts from the same project, a tar file and a custom artifact that's just a flat file
-// Try this using 'gradle publishToMavenLocal'
-apply plugin: 'maven-publish'
-def generated = "${buildDir}/generated.txt"
-task generate{
-  doFirst {
-    new File(generated) << "This is my generated artifact published as part of my project "
-  }
-}
-publish.dependsOn('generate')
-publishToMavenLocal.dependsOn('generate')
-
-publishing.publications {
-  tar(MavenPublication) {
-    artifact distTar
-  }
-
-  maven(MavenPublication) {
-    artifact generated
-    artifactId "MyGeneratedArtifact"
-  }
-}
 
 //
 // Building war files

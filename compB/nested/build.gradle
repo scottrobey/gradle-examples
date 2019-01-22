@@ -5,12 +5,54 @@ apply plugin: 'maven-publish'
 group "org.compositeexample.compB"
 version "1.0"
 
+configurations {
+  custom
+}
+
 dependencies {
   compile group: 'org.compositeexample.compA', name: 'subModA', version: '1.0'
   testCompile group: 'junit', name: 'junit', version: '4.+'
+  custom group:"tomcat", name:"apache-tomcat", version:"5.5.23", ext:"zip"
 }
 
 repositories {
     mavenLocal()
     jcenter()
 }
+
+// test copying file from one component build to another
+//task copyDependency(type: Copy) {
+//  group = "Build Setup"
+//  description = "Copy a dependency from 1 composite build to another"
+//
+//  from configurations.compile.filter{f -> f.name.endsWith('.txt')}.singleFile
+//  into "${project.buildDir}/gen"
+//  doLast {
+//    if(!file("${project.buildDir}/gen/generated.txt").exists()) throw new GradleException("Dependency doesn't exist!")
+//  }
+//}
+
+
+task stageFiles(type: Copy) {
+  group = "Build Setup"
+  description = "Copy a dependency and extract it"
+
+  from(configurations.custom.files)
+  into("${buildDir}/stage")
+  eachFile {
+    println "Staging ${it} ..."
+  }
+  doLast {
+    fileTree(dir: "${buildDir}/stage/", include: '*.zip').each {zipFile ->
+      println "Extracting: ${zipFile}"
+      copy {
+        from(zipTree(zipFile))
+        into("${buildDir}/stage")
+      }
+      delete zipFile
+    }
+  }
+}
+
+
+build.dependsOn('copyDependency')

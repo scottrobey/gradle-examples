@@ -4,4 +4,10 @@ allprojects {
 
   group "org.compositeexample.compA"
   version "1.0"
+
+  repositories {
+    mavenLocal()
+    jcenter()
+  }
+
 }
