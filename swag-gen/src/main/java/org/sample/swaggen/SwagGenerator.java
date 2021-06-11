@@ -60,7 +60,7 @@ class SwagGenerator {
             final ServletContextHandler root = new ServletContextHandler(server, "/", ServletContextHandler.SESSIONS);
 
             ServletHolder restServlet =
-                    new ServletHolder(new ServletContainer(new ApplicationConfig()));
+                    new ServletHolder(new ServletContainer(new ApplicationConfig(SwagGenerator.class.getPackageName())));
             restServlet.setInitOrder(1);
             root.addServlet(restServlet, "/*");
 
@@ -120,6 +120,7 @@ class SwagGenerator {
         public ApplicationConfig(String ... pkgs) {
             configureSwagger(pkgs);
         }
+
         public void configureSwagger(String ... pkgs) {
             register(ApiListingResource.class);
             register(SwaggerSerializers.class);

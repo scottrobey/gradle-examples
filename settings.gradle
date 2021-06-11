@@ -6,3 +6,14 @@ includeBuild 'kotlinExample'
 includeBuild 'swag-gen'
 includeBuild 'brown-bag'
 
+gradle.projectsLoaded { g ->
+  println "Inside projectsLoaded: " + g
+  
+  g.rootProject {
+    println "Inside rootProject"
+    beforeEvaluate { project ->
+      println "Inside beforeEvaluate"
+      project.ext.extvar = 'Blah'
+    }
+  }
+}

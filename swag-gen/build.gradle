@@ -5,25 +5,6 @@ apply plugin: 'application'
 group "org.sample.swaggen"
 version "1.0"
 
-application {
-  mainClassName = "org.sample.swaggen.SwagGenerator"
-}
-
-
-// see: https://docs.gradle.org/current/javadoc/index.html?org/gradle/api/tasks/JavaExec.html
-task generateSwaggerJson(type:JavaExec) {
-  group = "Build"
-  description = 'Generates a Swagger JSON file from all of the configured resources for the project.'
-
-  main = "org.sample.swaggen.SwagGenerator"
-  classpath = sourceSets.main.runtimeClasspath
-
-  args "--location=${buildDir}", "--readonly-correction", "--pretty"
-}
-
-build.dependsOn 'generateSwaggerJson'
-
-
 dependencies {
   compile group: 'commons-io', name: 'commons-io', version: '2.5'
   compile "org.json:json:20180813"
@@ -52,6 +33,41 @@ dependencies {
   // swagger
   compile('io.swagger:swagger-jersey2-jaxrs:1.5.3')
 
+}
+
+application {
+  mainClassName = "org.sample.swaggen.SwagGenerator"
+}
+
+def swaggerJson = file("${buildDir}/swagger.json")
+
+// see: https://docs.gradle.org/current/javadoc/index.html?org/gradle/api/tasks/JavaExec.html
+task generateSwaggerJson(type:JavaExec) {
+  group = "Build"
+  description = 'Generates a Swagger JSON file from all of the configured resources for the project.'
+
+  // custom tasks should declare inputs and outputs!
+  inputs.files(configurations.runtime.files)
+  outputs.file(swaggerJson)
+
+  main = "org.sample.swaggen.SwagGenerator"
+  classpath = sourceSets.main.runtimeClasspath
+
+  args "--location=${buildDir}", "--readonly-correction", "--pretty"
+}
+
+build.dependsOn(generateSwaggerJson)
+
+// add a custom file as an artifact
+artifacts.add('default', swaggerJson) {
+  builtBy 'generateSwaggerJson'
+}
+
+// print out artifacts from all configurations
+configurations.each {
+  if(!it.allArtifacts.isEmpty()) {
+    logger.info "Configuration: ${it} has artifacts: ${it.allArtifacts.collect { it.file.name }}"
+  }
 }
 
 repositories {

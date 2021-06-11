@@ -37,6 +37,44 @@ configurations {
   config2
 }
 
+// gradle hooks!
+//    see: https://docs.gradle.org/current/javadoc/org/gradle/api/invocation/Gradle.html#settingsEvaluated-groovy.lang.Closure-
+gradle.projectsLoaded{ g->
+  println "projectsLoaded running"
+}
+
+gradle.beforeProject{
+  println "beforeProject running"
+}
+gradle.afterProject{
+  println "afterProject running"
+}
+
+gradle.buildFinished{
+  println "buildFinished"
+}
+gradle.settingsEvaluated{
+  println "settingsEvaluated"
+}
+gradle.taskGraph.whenReady{
+  println "taskGraph.whenReady"
+}
+
+project.ext {
+  custom1 = 'YoYoMa'
+}
+
+task printProperties {
+  doLast {
+    println "Extra Properties: ${project.ext.properties}"
+    println "custom1: ${project.ext.custom1}"
+    println "project.properties: ${project.properties.hasProperty('custom1')}"
+
+    // project properties
+
+  }
+}
+
 
 dependencies {
 
@@ -55,6 +93,26 @@ dependencies {
 //     they will show using 'gradle tasks --all'
 //
 
+task custom {
+  inputs.file("src/main/resources/custom-task.properties")
+  outputs.file("${buildDir}/custom.properties")
+  doLast {
+    println "Copying file..."
+    ant.copy file: "src/main/resources/custom-task.properties",
+             tofile: "${buildDir}/custom.properties"
+  }
+}
+
+task showResolvedArtifacts() {
+  doLast {
+    project.configurations.config2.resolvedConfiguration.resolvedArtifacts.each {
+      println "Artifact name: ${it.name}"
+      println "Artifact module.group: ${it.moduleVersion.id.group}"
+      println "Artifact module.version: ${it.moduleVersion.id.version}"
+      // it.file
+    }
+  }
+}
 
 task test {
   group = "Test"
