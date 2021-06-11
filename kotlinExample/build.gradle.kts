@@ -14,6 +14,10 @@ plugins {
 group = "org.sample.kotlin"
 version = "1.0-SNAPSHOT"
 
+val custom by configurations.creating {
+    extendsFrom(configurations.testImplementation.get())
+}
+
 repositories {
     mavenLocal()
     mavenCentral()
@@ -26,26 +30,25 @@ java {
 }
 
 dependencies {
-    runtime("org.apache.httpcomponents:httpclient:4.5.6")
-    runtime("org.webjars:swagger-ui:2.1.5")
-    runtime(group = "tomcat", name = "apache-tomcat", version = "5.5.23", ext = "zip")
+    custom("org.apache.httpcomponents:httpclient:4.5.6")
+    custom("org.webjars:swagger-ui:2.1.5")
+    custom(group = "tomcat", name = "apache-tomcat", version = "5.5.23", ext = "zip")
 
-    testCompile("junit", "junit", "4.12")
+    testImplementation("junit", "junit", "4.12")
 }
 
-
 application {
-    mainClassName = "org.sample.kotlinexample.HellowWorld"
+    mainClass.set("org.sample.kotlinexample.HelloWorld")
 }
 
 distributions {
     getByName("main") {
-        baseName = "kotlinexample"
+        distributionBaseName.set("kotlinexample")
         contents {
-            from(zipTree(configurations.runtime.filter { it.name.contains("tomcat") }.singleFile)) {
+            from(zipTree(configurations.get("custom").filter { it.name.contains("tomcat") }.singleFile)) {
                 into("extracted")
             }
-            from(configurations.runtime.filter { it.name.contains("swagger")}) {
+            from(configurations.get("custom").filter { it.name.contains("swagger")}) {
                 into("swagger")
             }
         }
