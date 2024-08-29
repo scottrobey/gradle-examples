@@ -32,18 +32,20 @@ java {
 dependencies {
     custom("org.apache.httpcomponents:httpclient:4.5.6")
     custom("org.webjars:swagger-ui:2.1.5")
-    custom(group = "tomcat", name = "apache-tomcat", version = "5.5.23", ext = "zip")
+    custom(group = "org.apache.tomcat", name = "tomcat", version = "10.1.28", ext = "zip")
 
     testImplementation("junit", "junit", "4.12")
 }
 
+// Run Kotlin Hello World using:
+// ../gradlew run
 application {
-    mainClass.set("org.sample.kotlinexample.HelloWorld")
+    mainClassName = "org.sample.kotlinexample.HelloWorld"
 }
 
 distributions {
     getByName("main") {
-        distributionBaseName.set("kotlinexample")
+        //distributionBaseName.set("kotlinexample")
         contents {
             from(zipTree(configurations.get("custom").filter { it.name.contains("tomcat") }.singleFile)) {
                 into("extracted")

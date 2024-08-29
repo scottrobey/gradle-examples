@@ -1,5 +1,6 @@
 rootProject.name='gradle-examples'
 
+// includeBuild is how we include composite build projects
 includeBuild 'compA'
 includeBuild 'compB/nested'
 includeBuild 'kotlinExample'

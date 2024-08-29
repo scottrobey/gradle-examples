@@ -1,6 +1,6 @@
 // new way to add plugins
 plugins {
-  id 'com.gradle.build-scan' version '1.16'
+  id 'com.gradle.build-scan' version '2.0.2'
   id 'java'
 }
 group "org.example.gradle"
@@ -10,13 +10,17 @@ buildScan {
   termsOfServiceUrl = 'https://gradle.com/terms-of-service'
   termsOfServiceAgree = 'yes'
 }
-
+repositories {
+  mavenLocal()
+  mavenCentral()
+  jcenter()
+}
 configurations {
   custom
 }
 
 dependencies {
-  custom group: "tomcat", name: "apache-tomcat", version: "5.5.23", ext: "zip"
+  custom group: "org.apache.tomcat", name: "tomcat", version: "10.1.28", ext: "zip"
 }
 
 

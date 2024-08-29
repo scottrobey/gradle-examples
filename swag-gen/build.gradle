@@ -5,6 +5,12 @@ apply plugin: 'application'
 group "org.sample.swaggen"
 version "1.0"
 
+repositories {
+  mavenLocal()
+  mavenCentral()
+  jcenter()
+}
+
 dependencies {
   compile group: 'commons-io', name: 'commons-io', version: '2.5'
   compile "org.json:json:20180813"
@@ -70,6 +76,8 @@ configurations.each {
   }
 }
 
-repositories {
-  jcenter()
-}
+//repositories {
+//  mavenLocal()
+//  mavenCentral()
+//  jcenter()
+//}

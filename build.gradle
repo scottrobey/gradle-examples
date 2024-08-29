@@ -80,8 +80,7 @@ dependencies {
 
     config1 'org.apache.httpcomponents:httpclient:4.5.6'
     config1 "org.webjars:swagger-ui:2.1.5"
-
-    config2 group:"tomcat", name:"apache-tomcat", version:"5.5.23", ext:"zip"
+    config2 group:"org.apache.tomcat", name:"tomcat", version:"10.1.28", ext: "zip"
 
     config2  group: 'junit', name: 'junit', version: '4.+'
 
